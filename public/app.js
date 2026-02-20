@@ -65,20 +65,10 @@ async function processFile(file) {
     uploadOverlay.classList.add('hidden');
     loadingOverlay.classList.remove('hidden');
 
-    const CHUNK_THRESHOLD = 10 * 1024 * 1024; // 10 MB
-
-    if (file.size <= CHUNK_THRESHOLD) {
-        await uploadDirect(file);
-    } else {
-        await uploadChunked(file);
-    }
-}
-
-async function uploadDirect(file) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-        const response = await fetch('/upload', { method: 'POST', body: formData });
+        const response = await fetch('/api/upload', { method: 'POST', body: formData });
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.error || 'Upload failed');
@@ -87,53 +77,6 @@ async function uploadDirect(file) {
         finishUpload();
     } catch (err) {
         handleUploadError(err);
-    }
-}
-
-async function uploadChunked(file) {
-    const CHUNK_SIZE = 2 * 1024 * 1024;
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    let fileId = null;
-
-    const loadingSub = document.querySelector('.loading-sub');
-    const progressFill = document.querySelector('.scan-progress-fill');
-
-    for (let i = 0; i < totalChunks; i++) {
-        const start = i * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, file.size);
-        const chunk = file.slice(start, end);
-        const formData = new FormData();
-        formData.append('file', chunk, file.name);
-        formData.append('chunkIndex', i);
-        formData.append('totalChunks', totalChunks);
-        if (fileId) formData.append('fileId', fileId);
-
-        try {
-            const percent = Math.round(((i + 1) / totalChunks) * 100);
-            if (loadingSub) loadingSub.textContent = `Uploading part ${i + 1}/${totalChunks} (${percent}%)...`;
-            if (progressFill) progressFill.style.width = `${percent}%`;
-
-            const response = await fetch('/upload_chunk', { method: 'POST', body: formData });
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Upload failed');
-            }
-            const data = await response.json();
-
-            if (i === 0) {
-                fileId = data.file_id;
-                analysisData = data;
-                // Render immediately with partial data
-                finishUpload();
-                // Show analyzing toast?
-            } else if (i === totalChunks - 1) {
-                // Done
-                pollFullReport(fileId);
-            }
-        } catch (err) {
-            handleUploadError(err);
-            return;
-        }
     }
 }
 
@@ -252,33 +195,7 @@ function renderDashboard() {
 
     // 4. Handle Partial State
     const btnFull = document.getElementById('btnFullReport');
-    if (summary.is_partial) {
-        btnFull.classList.remove('hidden');
-        pollFullReport(analysisData.file_id);
-    } else {
-        btnFull.classList.add('hidden');
-    }
-}
-
-async function pollFullReport(fileId) {
-    const btn = document.getElementById('btnFullReport');
-    if (btn) btn.classList.remove('hidden');
-
-    const interval = setInterval(async () => {
-        try {
-            const res = await fetch(`/full_report/${fileId}`);
-            if (res.status === 200) {
-                const data = await res.json();
-                clearInterval(interval);
-                analysisData = data;
-                renderDashboard();
-                if (btn) btn.classList.add('hidden'); // Hide button when done? Or show "Done"?
-                alert("Full Analysis Complete!");
-            }
-        } catch (e) {
-            console.error("Polling error", e);
-        }
-    }, 2000);
+    if (btnFull) btnFull.classList.add('hidden');
 }
 
 function downloadReport() {
@@ -681,12 +598,12 @@ function openFraudModal() {
     const modal = document.getElementById('fraudModal');
     const backdrop = document.getElementById('modalBackdrop');
     const content = document.getElementById('modalContent');
-    
+
     if (modal) {
         modal.classList.remove('hidden');
         // Trigger reflow
         void modal.offsetWidth;
-        
+
         if (backdrop) backdrop.classList.remove('opacity-0');
         if (content) content.classList.remove('opacity-0', 'scale-95');
     }
@@ -696,11 +613,11 @@ function closeFraudModal() {
     const modal = document.getElementById('fraudModal');
     const backdrop = document.getElementById('modalBackdrop');
     const content = document.getElementById('modalContent');
-    
+
     if (modal) {
         if (backdrop) backdrop.classList.add('opacity-0');
         if (content) content.classList.add('opacity-0', 'scale-95');
-        
+
         setTimeout(() => {
             modal.classList.add('hidden');
         }, 300);
@@ -709,7 +626,7 @@ function closeFraudModal() {
 
 document.addEventListener('DOMContentLoaded', () => {
     const backdrop = document.getElementById('modalBackdrop');
-    if(backdrop) {
+    if (backdrop) {
         backdrop.addEventListener('click', closeFraudModal);
     }
 });
