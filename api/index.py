@@ -42,22 +42,31 @@ def analyze(file_storage, limit=None):
     except Exception as e:
         raise ValueError(f"Failed to parse CSV: {str(e)}")
 
-    # 2. Column Mapping
+    # 2. Column Mapping (Robustness)
     col_map = {}
+    print(f"DEBUG: CSV Columns found: {df.columns.tolist()}") # Log for debugging
+    
     for col in df.columns:
-        lc = col.strip().lower()
+        # Strip BOM and whitespace
+        clean_col = col.replace('\ufeff', '').strip()
+        lc = clean_col.lower()
+        
         if lc in ('sender_id', 'sender', 'nameorig', 'source', 'sender_account'):
             col_map[col] = 'sender_id'
         elif lc in ('receiver_id', 'receiver', 'namedest', 'destination', 'receiver_account'):
             col_map[col] = 'receiver_id'
         elif lc in ('amount', 'txn_amount'):
             col_map[col] = 'amount'
+            
     df = df.rename(columns=col_map)
     
     required = ['sender_id', 'receiver_id', 'amount']
+    # Check AFTER renaming
     missing = [c for c in required if c not in df.columns]
+    
     if missing:
-        raise ValueError(f"Missing required columns: {missing}")
+        # Return helpful error with actual columns found
+        raise ValueError(f"Missing required columns: {missing}. Found headers: {df.columns.tolist()} (Mapped from: {list(col_map.keys())})")
 
     # 3. Build Graph
     G = nx.DiGraph()
