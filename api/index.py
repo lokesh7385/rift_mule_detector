@@ -6,7 +6,7 @@ import sys
 import io
 import time
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 
 # ─────────────────────────────────────────────────────────────
@@ -46,9 +46,9 @@ def analyze(file_storage, limit=None):
     col_map = {}
     for col in df.columns:
         lc = col.strip().lower()
-        if lc in ('sender_id', 'sender', 'nameorig', 'source'):
+        if lc in ('sender_id', 'sender', 'nameorig', 'source', 'sender_account'):
             col_map[col] = 'sender_id'
-        elif lc in ('receiver_id', 'receiver', 'namedest', 'destination'):
+        elif lc in ('receiver_id', 'receiver', 'namedest', 'destination', 'receiver_account'):
             col_map[col] = 'receiver_id'
         elif lc in ('amount', 'txn_amount'):
             col_map[col] = 'amount'
@@ -150,16 +150,46 @@ def analyze(file_storage, limit=None):
         }
     }
 
-@app.route('/', methods=['GET'])
+# ─────────────────────────────────────────────────────────────
+# ROUTES
+# ─────────────────────────────────────────────────────────────
+
 @app.route('/health', methods=['GET'])
 @app.route('/api/health', methods=['GET'])
 def health():
-    # Only verify flask/basic imports here
     return jsonify({
         'status': 'ok',
         'engine': 'MuleWatch Serverless (Lazy Load)',
         'note': 'Pandas/NetworkX load only on upload'
     })
+
+@app.route('/')
+def serve_index():
+    # Attempt to locate index.html in likely places
+    possible_paths = [
+        os.path.join(os.getcwd(), 'index.html'), 
+        os.path.join(os.path.dirname(__file__), 'index.html'),
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), 'index.html')
+    ]
+    
+    for p in possible_paths:
+        if os.path.exists(p):
+            return send_file(p)
+            
+    return f"UI Not Found. checked: {possible_paths}", 404
+
+@app.route('/<path:path>')
+def serve_static(path):
+    # Serve static files (js, css)
+    if os.path.exists(os.path.join(os.getcwd(), path)):
+        return send_from_directory(os.getcwd(), path)
+    
+    # Try parent directory if running from api/
+    parent = os.path.dirname(os.getcwd())
+    if os.path.exists(os.path.join(parent, path)):
+        return send_from_directory(parent, path)
+
+    return "File not found", 404
 
 @app.route('/upload', methods=['POST'])
 @app.route('/api/upload', methods=['POST'])
