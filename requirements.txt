@@ -3,3 +3,6 @@ flask-cors
 networkx
 pandas
 numpy
+fastapi
+uvicorn
+python-multipart
