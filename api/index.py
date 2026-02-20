@@ -438,6 +438,8 @@ CORS(app)
 
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB
 
+@app.route('/', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 @app.route('/api/upload', methods=['POST'])
 def upload():
     """Handle CSV upload and run analysis."""
@@ -462,6 +464,8 @@ def upload():
         traceback.print_exc()
         return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
 
+@app.route('/', methods=['GET'])
+@app.route('/health', methods=['GET'])
 @app.route('/api/health', methods=['GET'])
 def health():
     return jsonify({
