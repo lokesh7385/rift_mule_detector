@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuleWatch - Financial Crime Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        sans: ['DM Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        midnight: '#06080d',
+                        charcoal: '#0d1117',
+                        slate: '#161b22',
+                        cyber: {
+                            red: '#FF3131',
+                            blue: '#00D4FF',
+                            green: '#00FF88',
+                            purple: '#8B5CF6',
+                            orange: '#FF9500',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg: #06080d;
+            --bg-card: rgba(13, 17, 23, 0.7);
+            --bg-elevated: rgba(22, 27, 34, 0.8);
+            --fg: #ffffff;
+            --fg-muted: #8b949e;
+            --accent-red: #FF3131;
+            --accent-blue: #00D4FF;
+            --accent-green: #00FF88;
+            --border: rgba(255, 255, 255, 0.08);
+            --glow-red: rgba(255, 49, 49, 0.4);
+            --glow-blue: rgba(0, 212, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--fg);
+            overflow-x: hidden;
+        }
+
+        .bg-atmosphere {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0, 212, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 80%, rgba(255, 49, 49, 0.05) 0%, transparent 50%),
+                radial-gradient(ellipse 100% 100% at 50% 50%, var(--bg) 0%, #0a0c12 100%);
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 70%);
+        }
+
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+        }
+
+        .glass-elevated {
+            background: var(--bg-elevated);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        @keyframes fadeSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeSlideRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeSlideLeft {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px var(--glow-red);
+            }
+
+            50% {
+                box-shadow: 0 0 40px var(--glow-red), 0 0 60px var(--glow-red);
+            }
+        }
+
+        @keyframes scan-line {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        .animate-reveal {
+            animation: fadeSlideUp 0.6s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-reveal-right {
+            animation: fadeSlideRight 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .animate-reveal-left {
+            animation: fadeSlideLeft 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+        }
+
+        .delay-5 {
+            animation-delay: 0.5s;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        *:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, #0099cc 100%);
+            color: var(--bg);
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 0 30px var(--glow-blue);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-red) 0%, #cc0000 100%);
+            color: white;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 0 30px var(--glow-red);
+        }
+
+        .sidebar-link {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 0;
+            background: var(--accent-blue);
+            border-radius: 0 2px 2px 0;
+            transition: height 0.2s ease;
+        }
+
+        .sidebar-link:hover::before,
+        .sidebar-link.active::before {
+            height: 60%;
+        }
+
+        .sidebar-link.active {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .metric-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-table tr {
+            transition: background 0.15s ease;
+        }
+
+        .data-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .risk-bar {
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .pattern-tag {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .action-panel {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .action-panel.open {
+            transform: translateX(0);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 8px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 20px;
+            width: 2px;
+            height: calc(100% - 8px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-item:last-child::after {
+            display: none;
+        }
+
+        .alert-pulse {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        .node-tooltip {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+        }
+
+        .node-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-content {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .page-content.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-switch.active {
+            background: var(--accent-blue);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+
+        .chart-bar {
+            transition: height 0.5s ease;
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: var(--accent-blue);
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .stat-ring {
+            transform: rotate(-90deg);
+        }
+
+        .stat-ring-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-ring-fill {
+            fill: none;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .scan-overlay::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-blue), transparent);
+            animation: scan-line 3s linear infinite;
+        }
+    </style>
+    <style>
+        /* --- Light Theme Variables --- */
+        body.light-theme {
+            --bg: #f8fafc;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --bg-elevated: #ffffff;
+            --fg: #0f172a;
+            --fg-muted: #64748b;
+            --border: rgba(0, 0, 0, 0.08);
+            --input-bg: #e2e8f0;
+            --glow-red: rgba(220, 38, 38, 0.2);
+            --glow-blue: rgba(14, 165, 233, 0.2);
+        }
+
+        /* --- Celestial Switch CSS --- */
+        :root {
+            --input-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        .theme-switch-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            transition: background 0.3s ease;
+        }
+
+        .theme-label {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .theme-label-title {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--fg);
+        }
+
+        .theme-label-sub {
+            font-size: 11px;
+            color: var(--fg-muted);
+        }
+
+        /* The Switch Track */
+        .celestial-switch {
+            position: relative;
+            width: 60px;
+            /* Scaled down for sidebar */
+            height: 30px;
+            background: linear-gradient(to right, #87CEEB, #E0F7FA);
+            border-radius: 20px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: background 0.6s ease;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .celestial-switch.dark {
+            background: linear-gradient(to right, #0f172a, #1e293b);
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .celestial-switch.dark .star {
+            opacity: 0.8;
+            animation: twinkle 2s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            0% {
+                opacity: 0.3;
+                transform: scale(0.8);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            transition: opacity 0.4s ease, transform 0.6s ease;
+            top: 6px;
+        }
+
+        .cloud-1 {
+            width: 14px;
+            height: 6px;
+            left: 8px;
+            animation: drift 3s infinite ease-in-out;
+        }
+
+        .cloud-2 {
+            width: 10px;
+            height: 4px;
+            left: 24px;
+            top: 14px;
+            animation: drift 4s infinite ease-in-out reverse;
+        }
+
+        .celestial-switch.dark .cloud {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        @keyframes drift {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+        }
+
+        .celestial-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .celestial-switch.dark .celestial-knob {
+            left: 33px;
+            /* Adjusted for smaller width */
+        }
+
+        .sun {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            box-shadow: 0 0 8px rgba(255, 165, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sun-rays {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            animation: spin 10s linear infinite;
+        }
+
+        .sun-rays::before,
+        .sun-rays::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 2px, transparent 3px);
+            background-size: 6px 6px;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .moon {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f5f5f5, #cfd8dc);
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.2), inset -2px -2px 4px rgba(0, 0, 0, 0.1);
+            transform: rotate(-45deg) scale(0);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            overflow: hidden;
+        }
+
+        .celestial-switch.dark .moon {
+            transform: rotate(0deg) scale(1);
+        }
+
+        .crater {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .crater-1 {
+            top: 6px;
+            left: 6px;
+            width: 5px;
+            height: 5px;
+        }
+
+        .crater-2 {
+            top: 14px;
+            left: 12px;
+            width: 3px;
+            height: 3px;
+        }
+
+        .celestial-switch.dark .sun {
+            transform: rotate(45deg) scale(0);
+            opacity: 0;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="bg-atmosphere"></div>
+    <div class="bg-grid"></div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="fileInput" class="hidden" accept=".csv" />
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-midnight/90 z-50 flex flex-col items-center justify-center hidden">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-cyber-blue mb-4"></div>
+        <p class="text-white text-lg font-medium loading-text">Analyzing Transactions...</p>
+        <p class="text-gray-400 text-sm mt-2 loading-sub">Please wait while we process your data</p>
+        <div class="scan-progress-bar w-64 h-2 bg-white/10 rounded-full mt-4 overflow-hidden">
+            <div class="scan-progress-fill h-full bg-cyber-blue w-0 transition-all duration-300"></div>
+        </div>
+    </div>
+
+    <!-- Upload Overlay (Initial State) -->
+    <div id="uploadOverlay" class="fixed inset-0 bg-midnight/90 z-40 flex flex-col items-center justify-center">
+        <div
+            class="glass-elevated p-10 rounded-2xl text-center max-w-lg w-full border border-cyber-blue/20 shadow-[0_0_50px_rgba(0,212,255,0.1)]">
+            <h1 class="font-display text-4xl font-bold mb-2 tracking-tight">MuleWatch</h1>
+            <p class="text-gray-400 mb-8">Advanced Financial Crime Detection Engine</p>
+
+            <div class="border-2 border-dashed border-white/10 rounded-xl p-8 mb-6 hover:border-cyber-blue/50 transition-colors cursor-pointer group"
+                onclick="document.getElementById('fileInput').click()">
+                <div
+                    class="w-16 h-16 rounded-full bg-cyber-blue/10 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                    <svg class="w-8 h-8 text-cyber-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                </div>
+                <p class="text-white font-medium mb-1">Drop CSV Analysis File</p>
+                <p class="text-xs text-gray-500">or click to browse</p>
+            </div>
+
+            <p class="text-xs text-gray-600">Secure, local-first analysis processing</p>
+        </div>
+    </div>
+
+    <div class="flex min-h-screen relative z-10">
+        <!-- Sidebar -->
+        <aside class="w-64 glass border-r border-white/5 flex flex-col animate-reveal-right fixed h-screen"
+            role="navigation" aria-label="Main navigation">
+            <div class="p-6 border-b border-white/5">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyber-red to-red-700 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="font-display font-bold text-xl tracking-tight">MuleWatch</h1>
+                        <p class="text-xs text-gray-500 font-medium">Fraud Detection</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4">
+                <ul class="space-y-1">
+                    <li>
+                        <button
+                            class="sidebar-link active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5"
+                            data-page="overview" aria-current="page">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                            </svg>
+                            Overview
+                        </button>
+                    </li>
+
+                    <li>
+                        <button
+                            class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5"
+                            data-page="reports">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Risk Reports
+                        </button>
+                    </li>
+                    <li>
+                        <!-- Added Upload Button -->
+                        <button
+                            class="sidebar-link w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5"
+                            onclick="document.getElementById('fileInput').click()">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            New Scan
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+
+
+
+            <div class="p-4 border-t border-white/5">
+                <!-- Theme Switch -->
+                <div class="theme-switch-container">
+                    <div class="theme-label">
+                        <span class="theme-label-title">Theme</span>
+                    </div>
+
+                    <div id="celestialToggle" class="celestial-switch dark" role="switch" aria-checked="true"
+                        tabindex="0">
+                        <div class="star" style="top: 8px; left: 12px; animation-delay: 0s;"></div>
+                        <div class="star" style="top: 15px; left: 24px; animation-delay: 0.5s;"></div>
+
+                        <div class="cloud cloud-1"></div>
+                        <div class="cloud cloud-2"></div>
+
+                        <div class="celestial-knob">
+                            <div class="sun">
+                                <div class="sun-rays"></div>
+                            </div>
+                            <div class="moon">
+                                <div class="crater crater-1"></div>
+                                <div class="crater crater-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-elevated rounded-xl p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></div>
+                        <span class="text-xs font-medium text-gray-400">System Status</span>
+                    </div>
+                    <p class="text-sm font-semibold text-white">All Systems Operational</p>
+                    <p class="text-xs text-gray-500 mt-1" id="lastSync">Last sync: Just now</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 ml-64 min-h-screen overflow-hidden">
+
+            <!-- OVERVIEW PAGE -->
+            <div id="page-overview" class="page-content active h-screen flex flex-col overflow-hidden">
+                <header class="glass border-b border-white/5 px-6 py-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="animate-reveal delay-1">
+                            <h2 class="font-display text-2xl font-bold tracking-tight">Detection Dashboard</h2>
+                            <p class="text-sm text-gray-500 mt-1">Real-time financial crime monitoring</p>
+                        </div>
+                        <div class="flex items-center gap-4 animate-reveal delay-2">
+                            <div class="flex items-center gap-2 px-4 py-2 glass-elevated rounded-lg">
+                                <div class="w-2 h-2 rounded-full bg-cyber-green animate-pulse"></div>
+                                <span class="text-sm font-medium">Live Monitoring</span>
+                            </div>
+                            <!-- View Full Report Button (Dynamic) -->
+                            <button id="btnFullReport"
+                                class="btn-primary px-4 py-2 rounded-lg text-sm flex items-center gap-2 hidden">
+                                <span>Generating Full Report...</span>
+                                <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="metric-card glass-elevated rounded-xl p-4 animate-reveal delay-1">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total
+                                        Transactions</p>
+                                    <p class="text-3xl font-display font-bold mt-2 text-cyber-blue" id="metric-txns">--
+                                    </p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-cyber-blue/10 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-cyber-blue" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass-elevated rounded-xl p-4 animate-reveal delay-2">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active Fraud
+                                        Rings</p>
+                                    <p class="text-3xl font-display font-bold mt-2 text-cyber-red" id="metric-rings">--
+                                    </p>
+                                </div>
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-cyber-red/10 flex items-center justify-center alert-pulse">
+                                    <svg class="w-5 h-5 text-cyber-red" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass-elevated rounded-xl p-4 animate-reveal delay-3">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">High-Risk
+                                        Accounts</p>
+                                    <p class="text-3xl font-display font-bold mt-2 text-cyber-red" id="metric-accounts">
+                                        --</p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-cyber-red/10 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-cyber-red" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card glass-elevated rounded-xl p-4 animate-reveal delay-4">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Processing
+                                        Time</p>
+                                    <p class="text-3xl font-display font-bold mt-2 text-cyber-green" id="metric-time">--
+                                    </p>
+                                </div>
+                                <div class="w-10 h-10 rounded-lg bg-cyber-green/10 flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-cyber-green" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="flex-1 flex overflow-hidden">
+                    <div class="flex-1 flex flex-col p-6 overflow-auto">
+                        <section class="flex-1 glass-elevated rounded-2xl p-4 mb-6 animate-reveal delay-3"
+                            aria-label="Network visualization">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 class="font-display font-semibold text-lg">Transaction Network</h3>
+                                    <p class="text-sm text-gray-500">Click nodes to inspect account details</p>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-cyber-blue"></div>
+                                        <span class="text-xs text-gray-400">Normal</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-cyber-red"></div>
+                                        <span class="text-xs text-gray-400">Fraud Ring</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-cyber-green"></div>
+                                        <span class="text-xs text-gray-400">Verified</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="relative w-full h-80 md:h-96 rounded-xl overflow-hidden bg-midnight/50">
+                                <canvas id="networkCanvas" class="w-full h-full"></canvas>
+                                <div id="nodeTooltip"
+                                    class="node-tooltip absolute glass-elevated rounded-lg px-3 py-2 text-sm pointer-events-none z-20">
+                                    <p class="font-semibold" id="tooltipId"></p>
+                                    <p class="text-xs text-gray-400" id="tooltipRisk"></p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="glass-elevated rounded-2xl overflow-hidden animate-reveal delay-4">
+                            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-display font-semibold text-lg">High-Priority Detections</h3>
+                                    <p class="text-sm text-gray-500">Accounts requiring immediate attention</p>
+                                </div>
+                                <button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="downloadReport()">
+                                    Export JSON
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="data-table w-full">
+                                    <thead>
+                                        <tr class="border-b border-white/5">
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                Account ID</th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                Risk Score</th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                Pattern Detected</th>
+                                            <th
+                                                class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                                Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="detectionTable"></tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+
+                    <aside id="actionPanel" class="action-panel w-96 glass border-l border-white/5 flex flex-col">
+                        <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+                            <h3 class="font-display font-semibold">Account Intelligence</h3>
+                            <button id="closePanel"
+                                class="w-8 h-8 rounded-lg hover:bg-white/10 flex items-center justify-center transition-colors"
+                                aria-label="Close panel">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-auto p-6" id="panelContent">
+                            <div class="text-center py-12 text-gray-500">
+                                <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                                        d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                                </svg>
+                                <p class="text-sm">Click a node in the network graph<br>to view account details</p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Risk Reports Page -->
+            <div id="page-reports" class="page-content h-screen flex flex-col overflow-hidden">
+                <header class="glass border-b border-white/5 px-6 py-4">
+                    <div>
+                        <h2 class="font-display text-2xl font-bold tracking-tight">Risk Reports</h2>
+                        <p class="text-sm text-gray-500 mt-1">Export analysis results</p>
+                    </div>
+                </header>
+                <div class="flex-1 p-6 overflow-auto">
+                    <div class="glass-elevated rounded-xl p-8 text-center max-w-lg mx-auto mt-20">
+                        <h3 class="text-xl font-bold mb-4">Export Analysis Data</h3>
+                        <p class="text-gray-400 mb-6">Download the full JSON analysis including fraud rings, risk
+                            scores, and graph topology.</p>
+                        <button class="btn-primary px-6 py-3 rounded-lg w-full" onclick="downloadReport()">Download JSON
+                            Report</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- Fraud Details Modal -->
+    <div id="fraudModal"
+        class="fixed inset-0 z-50 flex items-center justify-center border-none outline-none hidden transition-all duration-300">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-midnight/80 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop">
+        </div>
+
+        <!-- Modal Content -->
+        <div class="relative z-10 w-full max-w-2xl glass-elevated rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] transform scale-95 opacity-0 transition-all duration-300"
+            id="modalContent">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+                <h3 class="font-display font-bold text-xl text-white flex items-center gap-2">
+                    <span class="w-2 h-6 bg-cyber-red rounded-full"></span>
+                    Fraud Analysis
+                </h3>
+                <button class="text-gray-400 hover:text-white transition-colors" onclick="closeFraudModal()">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 space-y-6">
+                <!-- Top Stats -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/5">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Confidence Score
+                        </p>
+                        <div class="flex items-end gap-2">
+                            <span class="font-display text-4xl font-bold text-cyber-blue" id="modalScore">0%</span>
+                            <span class="text-sm text-gray-500 mb-1.5 font-medium">probability</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
+                            <div id="modalScoreBar" class="h-full bg-cyber-blue transition-all duration-1000 ease-out"
+                                style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-xl p-4 border border-white/5">
+                        <p class="text-xs text-gray-400 uppercase tracking-wider font-semibold mb-1">Transactions
+                            Involved</p>
+                        <div class="flex items-end gap-2">
+                            <span class="font-display text-4xl font-bold text-white" id="modalTxCount">0</span>
+                            <span class="text-sm text-gray-500 mb-1.5 font-medium">suspicious events</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="bg-white/5 rounded-xl p-5 border border-white/5 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <svg class="w-24 h-24 text-cyber-red" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                        </svg>
+                    </div>
+                    <p class="text-xs text-cyber-red uppercase tracking-wider font-bold mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        Detected Pattern: <span id="modalPatternType" class="text-white">Unknown</span>
+                    </p>
+                    <p class="text-gray-300 text-sm leading-relaxed relative z-10" id="modalDescription">Loading
+                        description...</p>
+                </div>
+
+                <!-- Members List (Preview) -->
+                <div>
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-3">Targeted Accounts</p>
+                    <div class="flex flex-wrap gap-2 max-h-32 overflow-y-auto custom-scrollbar" id="modalMembers">
+                        <!-- Badges will go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 border-t border-white/5 bg-white/2 flex justify-end">
+                <button
+                    class="px-6 py-2.5 rounded-xl text-sm font-semibold bg-white/10 text-white hover:bg-white/20 transition-all hover:scale-105 active:scale-95"
+                    onclick="closeFraudModal()">
+                    Dismiss Analysis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Entry Point -->
+    <script src="app.js"></script>
+</body>
+
+</html>

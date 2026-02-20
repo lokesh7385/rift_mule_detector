@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuleWatch — Financial Crime Detection Dashboard</title>
+    <meta name="description"
+        content="MuleWatch: Advanced financial crime detection dashboard with interactive network graph visualization, fraud ring detection, and account risk analysis.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/cytoscape@3.28.1/dist/cytoscape.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ═══════════════ SIDEBAR ═══════════════ -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="14" stroke="url(#logoGrad)" stroke-width="2" fill="none" />
+                    <path d="M10 16 L16 10 L22 16 L16 22 Z" fill="url(#logoGrad)" opacity="0.8" />
+                    <circle cx="16" cy="16" r="4" fill="#FF3131" opacity="0.9" />
+                    <defs>
+                        <linearGradient id="logoGrad" x1="0" y1="0" x2="32" y2="32">
+                            <stop offset="0%" stop-color="#00A3FF" />
+                            <stop offset="100%" stop-color="#FF3131" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="logo-text">
+                <span class="logo-name">MuleWatch</span>
+                <span class="logo-sub">Crime Detection</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#overview" class="nav-link active" data-section="overview">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <span>Overview</span>
+            </a>
+            <a href="#network-analysis" class="nav-link" data-section="network-analysis">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="6" cy="6" r="3" />
+                    <circle cx="18" cy="18" r="3" />
+                    <circle cx="18" cy="6" r="3" />
+                    <circle cx="6" cy="18" r="3" />
+                    <line x1="8.5" y1="7.5" x2="15.5" y2="16.5" />
+                    <line x1="15.5" y1="7.5" x2="8.5" y2="16.5" />
+                </svg>
+                <span>Network Analysis</span>
+            </a>
+            <a href="#risk-reports" class="nav-link" data-section="risk-reports">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                <span>Risk Reports</span>
+            </a>
+            <a href="#settings" class="nav-link" data-section="settings">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-upload">
+            <button id="sidebar-upload-btn" class="upload-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                Upload CSV
+            </button>
+            <input type="file" id="file-input" accept=".csv" hidden>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="sidebar-status">
+                <span class="status-dot"></span>
+                <span>System Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+    <main id="main-content" class="main-content">
+
+        <!-- HEADER METRICS -->
+        <header id="overview" class="dashboard-header">
+            <div class="header-top">
+                <div>
+                    <h1 class="page-title">Dashboard <span class="title-accent">Overview</span></h1>
+                    <p class="page-subtitle">Real-time financial crime monitoring & detection</p>
+                </div>
+                <div class="header-actions">
+                    <button id="btn-full-report" class="btn-action btn-outline hidden">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                            <line x1="12" y1="18" x2="12" y2="12" />
+                            <line x1="9" y1="15" x2="15" y2="15" />
+                        </svg>
+                        View Full Report
+                    </button>
+                    <button id="btn-download" class="btn-action btn-outline" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        Export Report
+                    </button>
+                    <button id="btn-reset" class="btn-action btn-danger-outline" disabled>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                        New Scan
+                    </button>
+                </div>
+            </div>
+
+            <!-- Metric Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card" id="metric-transactions">
+                    <div class="metric-icon safe">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-value safe" id="val-transactions">—</span>
+                        <span class="metric-label">Total Transactions Scanned</span>
+                    </div>
+                    <div class="metric-trend safe">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="metric-card" id="metric-rings">
+                    <div class="metric-icon danger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <circle cx="12" cy="12" r="6" />
+                            <circle cx="12" cy="12" r="2" />
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-value danger" id="val-rings">—</span>
+                        <span class="metric-label">Active Fraud Rings</span>
+                    </div>
+                    <div class="metric-trend danger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="metric-card" id="metric-highrisk">
+                    <div class="metric-icon danger">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-value danger" id="val-highrisk">—</span>
+                        <span class="metric-label">High-Risk Accounts</span>
+                    </div>
+                    <div class="metric-trend danger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="metric-card" id="metric-time">
+                    <div class="metric-icon safe">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                    </div>
+                    <div class="metric-info">
+                        <span class="metric-value safe" id="val-time">—</span>
+                        <span class="metric-label">Avg Processing Time</span>
+                    </div>
+                    <div class="metric-trend safe">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- UPLOAD OVERLAY (shown before data is loaded) -->
+        <div id="upload-overlay" class="upload-overlay">
+            <div class="upload-card">
+                <div class="upload-card-glow"></div>
+                <div class="upload-icon-large">
+                    <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                        <circle cx="28" cy="28" r="26" stroke="url(#uploadGrad)" stroke-width="1.5"
+                            stroke-dasharray="4 4" fill="none" opacity="0.5" />
+                        <path d="M28 14V36M28 14L20 22M28 14L36 22" stroke="url(#uploadGrad)" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M14 34V40C14 42.2 15.8 44 18 44H38C40.2 44 42 42.2 42 40V34" stroke="url(#uploadGrad)"
+                            stroke-width="2.5" stroke-linecap="round" />
+                        <defs>
+                            <linearGradient id="uploadGrad" x1="0" y1="0" x2="56" y2="56">
+                                <stop offset="0%" stop-color="#00A3FF" />
+                                <stop offset="100%" stop-color="#FF3131" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>Begin Analysis</h2>
+                <p>Drop a transaction CSV file here to start scanning for fraud rings and suspicious activity</p>
+                <button id="upload-browse-btn" class="btn-upload-browse">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    Browse Files
+                </button>
+                <span class="upload-hint">Accepts .csv with sender, receiver, amount, timestamp</span>
+            </div>
+        </div>
+
+        <!-- LOADING STATE -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-card">
+                <div class="scanner-ring">
+                    <div class="ring r1"></div>
+                    <div class="ring r2"></div>
+                    <div class="ring r3"></div>
+                    <div class="scan-dot"></div>
+                </div>
+                <h3>Scanning Transaction Network</h3>
+                <p class="loading-sub">Detecting cycles, smurfing patterns & shell networks…</p>
+                <div class="scan-progress">
+                    <div class="scan-progress-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NETWORK ANALYSIS SECTION -->
+        <section id="network-analysis" class="section graph-section hidden">
+            <div class="section-header">
+                <h2>Network <span class="title-accent">Graph</span></h2>
+                <div class="graph-legend">
+                    <span class="legend-item"><span class="legend-dot normal"></span>Clean</span>
+                    <span class="legend-item"><span class="legend-dot suspicious"></span>Suspicious</span>
+                    <span class="legend-item"><span class="legend-dot fraud-ring"></span>Fraud Ring</span>
+                    <span class="legend-line"><span class="legend-edge"></span>Transaction Flow</span>
+                </div>
+            </div>
+            <div id="cy" class="graph-canvas"></div>
+        </section>
+
+        <!-- RISK REPORTS / DETECTION TABLE -->
+        <section id="risk-reports" class="section table-section hidden">
+            <div class="section-header">
+                <h2>Detection <span class="title-accent">Table</span></h2>
+                <div class="table-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="high">High Risk</button>
+                    <button class="filter-btn" data-filter="medium">Medium</button>
+                    <button class="filter-btn" data-filter="low">Low</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="detection-table">
+                    <thead>
+                        <tr>
+                            <th>Account ID</th>
+                            <th>Risk Score</th>
+                            <th>Pattern Detected</th>
+                            <th>Ring ID</th>
+                            <th>Last Activity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detection-tbody"></tbody>
+                </table>
+            </div>
+
+            <!-- Fraud Rings Summary -->
+            <div class="rings-summary">
+                <div class="section-header" style="margin-top:2rem;">
+                    <h2>Fraud Ring <span class="title-accent">Summary</span></h2>
+                </div>
+                <div class="table-container">
+                    <table id="rings-table">
+                        <thead>
+                            <tr>
+                                <th>Ring ID</th>
+                                <th>Pattern Type</th>
+                                <th>Members</th>
+                                <th>Risk Score</th>
+                                <th>Member Accounts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rings-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- SETTINGS SECTION -->
+        <section id="settings" class="section settings-section hidden">
+            <div class="section-header">
+                <h2>Settings</h2>
+            </div>
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3>Detection Thresholds</h3>
+                    <div class="setting-row">
+                        <label>Smurfing Fan Threshold</label>
+                        <input type="number" value="10" class="setting-input" disabled>
+                    </div>
+                    <div class="setting-row">
+                        <label>Time Window (hours)</label>
+                        <input type="number" value="72" class="setting-input" disabled>
+                    </div>
+                    <div class="setting-row">
+                        <label>Min Cycle Length</label>
+                        <input type="number" value="3" class="setting-input" disabled>
+                    </div>
+                </div>
+                <div class="settings-card">
+                    <h3>Visualization</h3>
+                    <div class="setting-row">
+                        <label>Graph Layout</label>
+                        <select class="setting-input" disabled>
+                            <option>Force-Directed (CoSE)</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label>Node Labels</label>
+                        <div class="toggle-switch"><input type="checkbox" checked disabled><span
+                                class="toggle-slider"></span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══════════════ ACTION PANEL (Right Sidebar) ═══════════════ -->
+    <aside id="action-panel" class="action-panel">
+        <div class="panel-header">
+            <h3>Account <span class="title-accent">Intelligence</span></h3>
+            <button id="panel-close" class="panel-close">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+
+        <div class="panel-body">
+            <!-- Account Info -->
+            <div class="panel-section">
+                <div class="account-header-card">
+                    <div class="account-avatar" id="panel-avatar">?</div>
+                    <div>
+                        <div class="account-id" id="panel-account-id">—</div>
+                        <div class="account-status" id="panel-status">Select a node</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Gauge -->
+            <div class="panel-section">
+                <h4>Risk Assessment</h4>
+                <div class="risk-gauge">
+                    <div class="gauge-bar">
+                        <div class="gauge-fill" id="panel-gauge" style="width: 0%"></div>
+                    </div>
+                    <div class="gauge-info">
+                        <span class="gauge-score" id="panel-score">0</span>
+                        <span class="gauge-label" id="panel-risk-label">No Data</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="panel-section">
+                <h4>Network Activity</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-value" id="panel-in-degree">—</span>
+                        <span class="stat-label">Incoming</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="panel-out-degree">—</span>
+                        <span class="stat-label">Outgoing</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="panel-rings-count">—</span>
+                        <span class="stat-label">Rings</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="panel-patterns-count">—</span>
+                        <span class="stat-label">Patterns</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detected Patterns -->
+            <div class="panel-section">
+                <h4>Detected Patterns</h4>
+                <div class="patterns-list" id="panel-patterns">
+                    <span class="empty-state">No patterns detected</span>
+                </div>
+            </div>
+
+            <!-- Transaction Timeline -->
+            <div class="panel-section">
+                <h4>Transaction Timeline</h4>
+                <div class="timeline" id="panel-timeline">
+                    <span class="empty-state">No transaction data</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="panel-actions">
+                <button id="btn-freeze" class="btn-freeze" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    Freeze Account
+                </button>
+                <button id="btn-flag" class="btn-flag" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+                        <line x1="4" y1="22" x2="4" y2="15" />
+                    </svg>
+                    Flag for Review
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="toast-icon"></div>
+        <span class="toast-text"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
