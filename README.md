@@ -58,23 +58,19 @@ The engine employs a multi-layered graph analysis approach:
 *   **Frontend**: Vanilla HTML5, TailwindCSS, Cytoscape.js.
 *   **Deployment**: Vercel (Monorepo: Frontend @ Root, Backend @ `/api`).
 
-## 🚀 How to Run Locally
+## 🚀 Deployment (Railway)
 
-1.  **Install Dependencies**:
+1.  **Push to GitHub**:
     ```bash
-    pip install -r requirements.txt
+    git push origin main
     ```
+2.  **Connect Railway**:
+    *   New Project -> Deploy from Repo -> Select `rift-mule-detector`.
+    *   Railway will detect `Procfile` and `requirements.txt`.
+    *   It will build a container with Python + Pandas + NetworkX.
+3.  **Live URL**: Railway will provide a `*.up.railway.app` URL.
 
-2.  **Run Simulation**:
-    ```bash
-    python simulate_logic.py
-    ```
-    *Verifies the core detection logic against a synthetic dataset.*
-
-3.  **Deploy**:
-    ```bash
-    vercel --prod
-    ```
+**(Deprecated Vercel Instructions Removed)**
 
 ---
 
