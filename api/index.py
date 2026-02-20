@@ -16,9 +16,13 @@ from flask_cors import CORS
 # ─────────────────────────────────────────────────────────────
 
 def parse_csv(file_storage, limit=None):
-    """Parse uploaded CSV, handling both column name variants."""
     try:
-        df = pd.read_csv(file_storage, nrows=limit)
+        # Vercel Optimization: Limit rows to prevent memory crashes
+        # 15k rows is a safe upper bound for 128MB/1s execution
+        actual_limit = 15000
+        if limit and limit < actual_limit:
+            actual_limit = limit
+        df = pd.read_csv(file_storage, nrows=actual_limit)
     except Exception as e:
         raise ValueError(f"Failed to parse CSV: {str(e)}")
 
@@ -104,9 +108,12 @@ def detect_cycles(G, min_len=3, max_len=5):
     raw_cycles = []
     seen_sets = set()
     try:
-        # Use simple_cycles if available and graph is small enough, else fallback logic could go here
-        # For serverless, time limit is tight, so we trust networkx is fast enough for typical demo data
+        # Timeout Guard: Stop searching if we exceed 5 seconds (leaving 5s for other tasks)
+        start_time = time.time()
         for cycle in nx.simple_cycles(G, length_bound=max_len):
+            if time.time() - start_time > 5.0:
+                break # Partial results are better than a 504 Timeout
+                
             if len(cycle) < min_len:
                 continue
             key = frozenset(cycle)
@@ -462,7 +469,12 @@ def upload():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Analysis failed: {str(e)}'}), 500
+        # Return 200 OK with error details so frontend can display it gracefully
+        return jsonify({
+            'error': str(e),
+            'tip': 'Check if CSV columns match requirements (sender_id, receiver_id, amount, timestamp) or if file is too large.',
+            'is_partial': True
+        }), 200
 
 @app.route('/', methods=['GET'])
 @app.route('/health', methods=['GET'])
